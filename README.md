@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # SmartDrishti IoT Learning Platform
 
 A comprehensive IoT learning platform that guides users through hands-on projects with step-by-step instructions, progress tracking, and media support.
@@ -192,3 +193,7 @@ For issues and questions:
 ---
 
 Built with ❤️ for IoT learners everywhere!
+=======
+# IOT_Web_Portal
+SmartDrishti is an IoT learning platform that provides step-by-step project guidance, progress tracking, and real-time device monitoring to help users learn IoT development through hands-on, practical experiences.
+>>>>>>> e9fc4d316eeb72ce4b642fed816ffc3ca436b3e2
