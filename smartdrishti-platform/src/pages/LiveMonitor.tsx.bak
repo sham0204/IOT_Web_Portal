@@ -1,0 +1,454 @@
+import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import { DashboardLayout } from "@/components/DashboardLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Activity, RefreshCw, Download, Trash2, Play, Pause } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
+
+// Socket.io client
+import { io, Socket } from 'socket.io-client';
+
+// Define types for our sensor data
+interface SensorReading {
+  id: string;
+  deviceId: string;
+  temperature: number | null;
+  humidity: number | null;
+  pressure: number | null;
+  lightLevel: number | null;
+  motionDetected: boolean;
+  timestamp: string;
+}
+
+interface DeviceInfo {
+  id: string;
+  deviceId: string;
+  name: string;
+  type: string;
+  location: string;
+  status: string;
+  lastSeen: string;
+  createdAt: string;
+}
+
+// Mock data generator (kept for fallback)
+const generateReading = () => ({
+  timestamp: new Date().toLocaleTimeString(),
+  temperature: 20 + Math.random() * 15,
+  humidity: 40 + Math.random() * 30,
+  pressure: 1000 + Math.random() * 20,
+});
+
+const initialData = Array.from({ length: 20 }, (_, i) => {
+  const date = new Date();
+  date.setSeconds(date.getSeconds() - (20 - i) * 5);
+  return {
+    timestamp: date.toLocaleTimeString(),
+    temperature: 20 + Math.random() * 15,
+    humidity: 40 + Math.random() * 30,
+    pressure: 1000 + Math.random() * 20,
+  };
+});
+
+const LiveMonitor = () => {
+  const [data, setData] = useState(initialData);
+  const [isLive, setIsLive] = useState(true);
+  const [selectedMetric, setSelectedMetric] = useState("temperature");
+  const [readings, setReadings] = useState<SensorReading[]>([]);
+  const [connected, setConnected] = useState(false);
+  const [devices, setDevices] = useState<{id: string, name: string}[]>([]);
+  
+  const socketRef = useRef<Socket | null>(null);
+  const selectedDeviceRef = useRef<string | null>(null);
+
+  // Connect to WebSocket server
+  useEffect(() => {
+    // Connect to the backend WebSocket
+    socketRef.current = io('http://localhost:5000', {
+      transports: ['websocket']
+    });
+
+    socketRef.current.on('connect', () => {
+      console.log('Connected to WebSocket server');
+      setConnected(true);
+      
+      // Join the general updates room
+      socketRef.current!.emit('join-device', 'all-devices');
+      
+      // If we have a selected device, join its room
+      if (selectedDeviceRef.current) {
+        socketRef.current!.emit('join-device', selectedDeviceRef.current);
+      }
+    });
+
+    socketRef.current.on('disconnect', () => {
+      console.log('Disconnected from WebSocket server');
+      setConnected(false);
+    });
+
+    // Listen for sensor data updates
+    socketRef.current.on('sensor-data-update', (sensorData: SensorReading) => {
+      console.log('Received sensor data:', sensorData);
+      
+      // Update the chart data
+      setData(prev => {
+        const newData = [...prev.slice(1)];
+        const newEntry = {
+          timestamp: new Date(sensorData.timestamp).toLocaleTimeString(),
+          temperature: sensorData.temperature || 0,
+          humidity: sensorData.humidity || 0,
+          pressure: sensorData.pressure || 0,
+        };
+        return [...newData, newEntry];
+      });
+      
+      // Update the readings table
+      setReadings(prev => {
+        const newReading = {
+          ...sensorData,
+          id: sensorData.id || Date.now().toString(),
+        };
+        return [newReading, ...prev.slice(0, 9)]; // Keep only last 10 readings
+      });
+    });
+
+    // Listen for all devices updates
+    socketRef.current.on('all-devices-update', (sensorData: SensorReading) => {
+      console.log('Received all devices update:', sensorData);
+      
+      // Update the readings table
+      setReadings(prev => {
+        const newReading = {
+          ...sensorData,
+          id: sensorData.id || Date.now().toString(),
+        };
+        return [newReading, ...prev.slice(0, 9)]; // Keep only last 10 readings
+      });
+    });
+
+    // Fetch available devices
+    const fetchDevices = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/iot/devices');
+        const result = await response.json();
+        if (result.success) {
+          setDevices(result.devices.map((d: any) => ({
+            id: d.deviceId,
+            name: d.name
+          })));
+        }
+      } catch (error) {
+        console.error('Error fetching devices:', error);
+      }
+    };
+
+    fetchDevices();
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, []);
+
+  // Handle device selection
+  const handleDeviceSelect = (deviceId: string) => {
+    if (socketRef.current) {
+      // Leave previous device room if any
+      if (selectedDeviceRef.current) {
+        socketRef.current.emit('leave-device', selectedDeviceRef.current);
+      }
+      
+      // Join new device room
+      socketRef.current.emit('join-device', deviceId);
+      selectedDeviceRef.current = deviceId;
+    }
+  };
+
+  const chartData = data.map((d) => ({
+    time: d.timestamp,
+    value: selectedMetric === "temperature" ? d.temperature :
+           selectedMetric === "humidity" ? d.humidity : d.pressure,
+  }));
+
+  const metricConfig = {
+    temperature: { color: "hsl(233, 100%, 52%)", unit: "°C", label: "Temperature" },
+    humidity: { color: "hsl(187, 100%, 50%)", unit: "%", label: "Humidity" },
+    pressure: { color: "hsl(156, 100%, 50%)", unit: "hPa", label: "Pressure" },
+  };
+
+  const currentConfig = metricConfig[selectedMetric as keyof typeof metricConfig];
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-8">
+        {/* Header */}
+        <motion.div
+          className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex items-center gap-4">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+              connected 
+                ? 'bg-gradient-to-br from-emerald-500 to-teal-500' 
+                : 'bg-gradient-to-br from-red-500 to-orange-500'
+            }`}>
+              <Activity className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-heading font-bold">Live Monitor</h1>
+              <p className="text-muted-foreground">
+                {connected 
+                  ? 'Connected to IoT devices - Receiving real-time data' 
+                  : 'Connecting to IoT devices...'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${
+              connected ? "bg-emerald-500/20 text-emerald-500" : "bg-red-500/20 text-red-500"
+            }`}>
+              <div className={`w-2 h-2 rounded-full ${connected ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`} />
+              <span className="text-sm font-medium">
+                {connected ? "Connected" : "Disconnected"}
+              </span>
+            </div>
+            <Button
+              variant={isLive ? "outline" : "glow"}
+              onClick={() => setIsLive(!isLive)}
+            >
+              {isLive ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
+              {isLive ? "Pause" : "Resume"}
+            </Button>
+          </div>
+        </motion.div>
+
+        {/* Device Selection */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle>Device Selection</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-4 items-center">
+                <Select 
+                  onValueChange={handleDeviceSelect}
+                  value={selectedDeviceRef.current || undefined}
+                >
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Select a device to monitor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all-devices">All Devices</SelectItem>
+                    {devices.map(device => (
+                      <SelectItem key={device.id} value={device.id}>
+                        {device.name} ({device.id})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    if (socketRef.current && selectedDeviceRef.current) {
+                      socketRef.current.emit('leave-device', selectedDeviceRef.current);
+                      selectedDeviceRef.current = null;
+                    }
+                  }}
+                  disabled={!selectedDeviceRef.current}
+                >
+                  Clear Selection
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Main Grid */}
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Live Readings Table */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="glass-card h-full">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Live Readings</CardTitle>
+                <div className="flex gap-2">
+                  <Button variant="ghost" size="icon">
+                    <RefreshCw className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon">
+                    <Download className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Device</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Value</TableHead>
+                      <TableHead>Time</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {readings.length > 0 ? readings.map((reading, index) => (
+                      <TableRow key={reading.id} className={index === 0 && isLive ? "animate-fade-in" : ""}>
+                        <TableCell className="font-medium">{reading.deviceId}</TableCell>
+                        <TableCell>
+                          {reading.temperature !== null && (
+                            <span className="px-2 py-1 rounded-md text-sm bg-primary/20 text-primary">
+                              Temperature
+                            </span>
+                          )}
+                          {reading.humidity !== null && (
+                            <span className="px-2 py-1 rounded-md text-sm bg-secondary/20 text-secondary">
+                              Humidity
+                            </span>
+                          )}
+                          {reading.pressure !== null && (
+                            <span className="px-2 py-1 rounded-md text-sm bg-accent/20 text-accent">
+                              Pressure
+                            </span>
+                          )}
+                          {reading.lightLevel !== null && (
+                            <span className="px-2 py-1 rounded-md text-sm bg-purple-500/20 text-purple-500">
+                              Light Level
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {reading.temperature !== null && `${reading.temperature.toFixed(2)}°C`}
+                          {reading.humidity !== null && `${reading.humidity.toFixed(1)}%`}
+                          {reading.pressure !== null && `${reading.pressure.toFixed(1)} hPa`}
+                          {reading.lightLevel !== null && `${reading.lightLevel.toFixed(0)} lux`}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {new Date(reading.timestamp).toLocaleTimeString()}
+                        </TableCell>
+                      </TableRow>
+                    )) : (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                          Waiting for sensor data...
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Live Graph */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card className="glass-card h-full">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Real-time Graph</CardTitle>
+                <Select value={selectedMetric} onValueChange={setSelectedMetric}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="temperature">Temperature</SelectItem>
+                    <SelectItem value="humidity">Humidity</SelectItem>
+                    <SelectItem value="pressure">Pressure</SelectItem>
+                  </SelectContent>
+                </Select>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[350px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData}>
+                      <defs>
+                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={currentConfig.color} stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor={currentConfig.color} stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(225, 30%, 18%)" />
+                      <XAxis
+                        dataKey="time"
+                        stroke="hsl(215, 20%, 65%)"
+                        tick={{ fill: "hsl(215, 20%, 65%)", fontSize: 12 }}
+                      />
+                      <YAxis
+                        stroke="hsl(215, 20%, 65%)"
+                        tick={{ fill: "hsl(215, 20%, 65%)", fontSize: 12 }}
+                        domain={selectedMetric === "pressure" ? [990, 1030] : ["auto", "auto"]}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "hsl(225, 40%, 12%)",
+                          border: "1px solid hsl(225, 30%, 18%)",
+                          borderRadius: "12px",
+                        }}
+                        labelStyle={{ color: "hsl(210, 40%, 98%)" }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="value"
+                        stroke={currentConfig.color}
+                        strokeWidth={2}
+                        fillOpacity={1}
+                        fill="url(#colorValue)"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Current Value Display */}
+                <div className="mt-4 flex items-center justify-center gap-8 p-4 rounded-xl bg-muted/30">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">{currentConfig.label}</p>
+                    <p className="text-3xl font-heading font-bold" style={{ color: currentConfig.color }}>
+                      {chartData[chartData.length - 1]?.value?.toFixed(1) || '--'}{currentConfig.unit}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
+        {/* Actions */}
+        <motion.div
+          className="flex gap-4 justify-end"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Button variant="outline">
+            <Download className="w-4 h-4 mr-2" />
+            Export Data
+          </Button>
+          <Button variant="destructive">
+            <Trash2 className="w-4 h-4 mr-2" />
+            Clear Readings
+          </Button>
+          <Button variant="hero">
+            Submit Readings
+          </Button>
+        </motion.div>
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default LiveMonitor;
