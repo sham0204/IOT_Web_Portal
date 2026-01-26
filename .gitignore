@@ -1,0 +1,5 @@
+node_modules/
+database.sqlite
+backend/uploads/
+.env
+smartdrishti-platform/node_modules/
