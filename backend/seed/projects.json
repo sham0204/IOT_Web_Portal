@@ -1,0 +1,467 @@
+[
+  {
+    "title": "Simple Electric Circuit with Switch",
+    "difficulty": "Easy",
+    "description": "Basic circuit demonstrating how a switch controls current to an LED.",
+    "components": ["Switch", "LED", "Resistor", "Battery"],
+    "working_principle": "When the switch closes the circuit, current flows and the LED turns on.",
+    "steps": [
+      "Connect battery, switch, resistor, and LED",
+      "Keep switch OFF and observe LED",
+      "Press switch to close circuit",
+      "Observe LED glowing",
+      "Release switch to turn LED OFF"
+    ],
+    "code": "",
+    "conclusion": "Demonstrates how switches control electric current in circuits.",
+    "image_url": "/uploads/project-images/simple-electric-circuit.jpg",
+    "is_demo": true
+  },
+  {
+    "title": "Simple Windmill",
+    "difficulty": "Easy",
+    "description": "Shows conversion of wind energy into electrical energy using a DC motor.",
+    "components": ["DC Motor", "Fan Blade", "LED", "Resistor", "Base"],
+    "working_principle": "Wind rotates the motor shaft, generating electricity to light an LED.",
+    "steps": [
+      "Fix DC motor to base",
+      "Attach fan blade",
+      "Connect LED to motor terminals",
+      "Blow air on blade",
+      "Observe LED glowing"
+    ],
+    "code": "",
+    "conclusion": "Demonstrates renewable energy conversion using a simple setup.",
+    "image_url": "/uploads/project-images/simple-windmill.jpg",
+    "is_demo": true
+  },
+  {
+    "title": "Automatic Room Light",
+    "difficulty": "Medium",
+    "description": "Uses an LDR to automatically control an LED based on light levels.",
+    "components": ["Arduino", "LDR", "10kΩ Resistor", "LED", "220Ω Resistor"],
+    "working_principle": "Arduino reads LDR values and turns the LED on when it is dark.",
+    "steps": [
+      "Connect LDR to analog pin",
+      "Connect LED to digital pin",
+      "Upload code",
+      "Power Arduino",
+      "Test by covering LDR"
+    ],
+    "code": "Arduino LDR light control code",
+    "conclusion": "Shows automation of lighting using a light sensor.",
+    "image_url": "/uploads/project-images/automatic-room-light.jpg",
+    "is_demo": true
+  },
+  {
+    "title": "Clap Switch",
+    "difficulty": "Medium",
+    "description": "Controls an LED using sound input from a microphone sensor.",
+    "components": ["Arduino", "Microphone Sensor", "LED", "Breadboard", "Wires"],
+    "working_principle": "Sound detected by the sensor toggles the LED state.",
+    "steps": [
+      "Connect microphone sensor",
+      "Connect LED",
+      "Upload code",
+      "Power Arduino",
+      "Clap to toggle LED"
+    ],
+    "code": "Arduino clap switch code",
+    "conclusion": "Demonstrates sound-based automation.",
+    "image_url": "/uploads/project-images/clap-switch.jpg",
+    "is_demo": true
+  },
+  {
+    "title": "LED Greeting Card",
+    "difficulty": "Easy",
+    "description": "Greeting card with LEDs that light up when opened.",
+    "components": ["LED", "Coin Cell", "Switch", "Card Material"],
+    "working_principle": "Opening the card closes the circuit and lights the LED.",
+    "steps": [
+      "Design card",
+      "Insert LEDs and battery",
+      "Add switch",
+      "Close card to turn off LED",
+      "Open card to light LED"
+    ],
+    "code": "",
+    "conclusion": "Combines electronics with creative design.",
+    "image_url": "/uploads/project-images/led-greeting-card.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "Air Quality Indicator",
+    "difficulty": "Medium",
+    "description": "Detects dust levels and alerts using an LED.",
+    "components": ["Arduino", "Dust Sensor", "LED", "Resistor"],
+    "working_principle": "Sensor detects dust concentration and triggers LED.",
+    "steps": [
+      "Connect dust sensor",
+      "Connect LED",
+      "Upload code",
+      "Power Arduino",
+      "Test in dusty environment"
+    ],
+    "code": "Arduino dust sensor code",
+    "conclusion": "Demonstrates environmental monitoring.",
+    "image_url": "/uploads/project-images/air-quality-indicator.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "Series and Parallel LED Circuit",
+    "difficulty": "Easy",
+    "description": "Compares LED brightness in series vs parallel circuits.",
+    "components": ["LEDs", "Resistors", "Arduino", "Breadboard"],
+    "working_principle": "Series circuits share current, parallel circuits share voltage.",
+    "steps": [
+      "Connect LEDs in series",
+      "Observe brightness",
+      "Connect LEDs in parallel",
+      "Observe brightness",
+      "Compare results"
+    ],
+    "code": "Arduino LED control code",
+    "conclusion": "Explains difference between series and parallel circuits.",
+    "image_url": "/uploads/project-images/series-parallel-led.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "Memory Game using LEDs",
+    "difficulty": "Hard",
+    "description": "Memory game where users repeat LED sequences.",
+    "components": ["Arduino", "LEDs", "Buttons", "Buzzer"],
+    "working_principle": "Arduino generates sequences and checks user input.",
+    "steps": [
+      "Connect LEDs and buttons",
+      "Upload code",
+      "Watch LED sequence",
+      "Repeat sequence",
+      "Advance level if correct"
+    ],
+    "code": "Arduino memory game code",
+    "conclusion": "Demonstrates game logic and memory sequences.",
+    "image_url": "/uploads/project-images/memory-game.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "Mini Piano using Buzzer",
+    "difficulty": "Medium",
+    "description": "Produces musical notes using buttons and buzzer.",
+    "components": ["Arduino", "Buzzer", "Push Buttons"],
+    "working_principle": "Each button triggers a tone frequency.",
+    "steps": [
+      "Connect buttons",
+      "Connect buzzer",
+      "Upload code",
+      "Press buttons",
+      "Hear notes"
+    ],
+    "code": "Arduino piano code",
+    "conclusion": "Combines electronics with music.",
+    "image_url": "/uploads/project-images/mini-piano.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "Logic Gate Simulation – AND",
+    "difficulty": "Easy",
+    "description": "Simulates AND logic gate using switches and LED.",
+    "components": ["Arduino", "Switches", "LED", "Resistors"],
+    "working_principle": "LED turns on only when both switches are on.",
+    "steps": [
+      "Connect switches",
+      "Connect LED",
+      "Upload code",
+      "Turn both switches on",
+      "Observe LED"
+    ],
+    "code": "Arduino AND gate code",
+    "conclusion": "Demonstrates digital logic using hardware.",
+    "image_url": "/uploads/project-images/and-gate.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "Logic Gate Simulation – OR",
+    "difficulty": "Easy",
+    "description": "Simulates OR logic gate using switches and LED.",
+    "components": ["Arduino", "Switches", "LED", "Resistors"],
+    "working_principle": "LED turns on if any switch is on.",
+    "steps": [
+      "Connect switches",
+      "Connect LED",
+      "Upload code",
+      "Turn any switch on",
+      "Observe LED"
+    ],
+    "code": "Arduino OR gate code",
+    "conclusion": "Shows OR logic behavior.",
+    "image_url": "/uploads/project-images/or-gate.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "Voice Controlled LED",
+    "difficulty": "Medium",
+    "description": "Controls LED using sound input.",
+    "components": ["Arduino", "Sound Sensor", "LED"],
+    "working_principle": "Sound detection triggers LED.",
+    "steps": [
+      "Connect sensor",
+      "Connect LED",
+      "Upload code",
+      "Make sound",
+      "Observe LED"
+    ],
+    "code": "Arduino sound sensor code",
+    "conclusion": "Demonstrates sound-based control.",
+    "image_url": "/uploads/project-images/voice-led.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "Rain Alarm System",
+    "difficulty": "Medium",
+    "description": "Detects rain and triggers an alarm.",
+    "components": ["Arduino", "Rain Sensor", "Buzzer"],
+    "working_principle": "Water contact triggers buzzer alert.",
+    "steps": [
+      "Connect rain sensor",
+      "Connect buzzer",
+      "Upload code",
+      "Sprinkle water",
+      "Observe alarm"
+    ],
+    "code": "Arduino rain alarm code",
+    "conclusion": "Useful for rain detection systems.",
+    "image_url": "/uploads/project-images/rain-alarm.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "LED Blink using ESP32",
+    "difficulty": "Easy",
+    "description": "Basic LED blinking using ESP32.",
+    "components": ["ESP32", "LED", "Resistor"],
+    "working_principle": "GPIO pin toggles LED state.",
+    "steps": [
+      "Connect LED to ESP32",
+      "Upload code",
+      "Power board",
+      "Observe LED blinking"
+    ],
+    "code": "ESP32 blink code",
+    "conclusion": "Basic ESP32 digital output project.",
+    "image_url": "/uploads/project-images/esp32-blink.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "Water Detector",
+    "difficulty": "Medium",
+    "description": "Detects water level and triggers alerts.",
+    "components": ["Arduino", "Water Sensor", "LED", "Buzzer"],
+    "working_principle": "Water conductivity triggers alerts.",
+    "steps": [
+      "Connect sensor",
+      "Connect LEDs and buzzer",
+      "Upload code",
+      "Place sensor in water",
+      "Observe alerts"
+    ],
+    "code": "Arduino water detector code",
+    "conclusion": "Prevents water overflow.",
+    "image_url": "/uploads/project-images/water-detector.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "Flame Detector",
+    "difficulty": "Medium",
+    "description": "Detects fire and triggers alerts.",
+    "components": ["Arduino", "Flame Sensor", "Buzzer"],
+    "working_principle": "Infrared radiation from flame triggers alert.",
+    "steps": [
+      "Connect flame sensor",
+      "Connect buzzer",
+      "Upload code",
+      "Bring flame near sensor",
+      "Observe alert"
+    ],
+    "code": "Arduino flame detector code",
+    "conclusion": "Basic fire detection system.",
+    "image_url": "/uploads/project-images/flame-detector.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "DIY Flashlight",
+    "difficulty": "Easy",
+    "description": "Simple flashlight using LED and battery.",
+    "components": ["LED", "Battery", "Copper Tape"],
+    "working_principle": "Closed circuit powers LED.",
+    "steps": [
+      "Place LED",
+      "Attach copper tape",
+      "Connect battery",
+      "Complete circuit",
+      "Observe light"
+    ],
+    "code": "",
+    "conclusion": "Basic electronics demonstration.",
+    "image_url": "/uploads/project-images/diy-flashlight.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "Water Level Indicator",
+    "difficulty": "Medium",
+    "description": "Indicates water levels using LEDs and buzzer.",
+    "components": ["Arduino", "Water Sensor", "LEDs", "Buzzer"],
+    "working_principle": "Water conductivity determines level.",
+    "steps": [
+      "Insert sensor",
+      "Connect LEDs and buzzer",
+      "Upload code",
+      "Power system",
+      "Observe indicators"
+    ],
+    "code": "Arduino water level code",
+    "conclusion": "Helps monitor tank levels.",
+    "image_url": "/uploads/project-images/water-level.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "Buzzer Interfacing",
+    "difficulty": "Easy",
+    "description": "Controls buzzer using Arduino.",
+    "components": ["Arduino", "Buzzer"],
+    "working_principle": "Digital output controls buzzer sound.",
+    "steps": [
+      "Connect buzzer",
+      "Upload code",
+      "Power Arduino",
+      "Observe buzzer"
+    ],
+    "code": "Arduino buzzer code",
+    "conclusion": "Basic sound output project.",
+    "image_url": "/uploads/project-images/buzzer.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "DIY Bookmark",
+    "difficulty": "Easy",
+    "description": "Creative bookmark using paper and craft materials.",
+    "components": ["Paper", "Markers", "Glue"],
+    "working_principle": "Manual craft-based project.",
+    "steps": [
+      "Cut paper",
+      "Decorate",
+      "Let glue dry",
+      "Use bookmark"
+    ],
+    "code": "",
+    "conclusion": "Encourages creativity and reading habits.",
+    "image_url": "/uploads/project-images/bookmark.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "Simple LED Blink using Arduino",
+    "difficulty": "Easy",
+    "description": "Basic Arduino LED blinking project.",
+    "components": ["Arduino", "LED", "Resistor"],
+    "working_principle": "Digital output toggles LED.",
+    "steps": [
+      "Connect LED",
+      "Upload code",
+      "Power Arduino",
+      "Observe blinking"
+    ],
+    "code": "Arduino blink code",
+    "conclusion": "Foundation for embedded projects.",
+    "image_url": "/uploads/project-images/arduino-blink.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "Automatic Hand Sanitizer Dispenser",
+    "difficulty": "Medium",
+    "description": "Contactless sanitizer using ultrasonic sensor and servo.",
+    "components": ["Arduino", "Ultrasonic Sensor", "Servo Motor"],
+    "working_principle": "Sensor detects hand and triggers servo.",
+    "steps": [
+      "Connect ultrasonic sensor",
+      "Connect servo",
+      "Upload code",
+      "Power system",
+      "Place hand near sensor"
+    ],
+    "code": "Arduino sanitizer code",
+    "conclusion": "Promotes contactless hygiene.",
+    "image_url": "/uploads/project-images/sanitizer.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "Buzzer Interfacing using ESP32",
+    "difficulty": "Easy",
+    "description": "Controls buzzer using ESP32.",
+    "components": ["ESP32", "Buzzer"],
+    "working_principle": "GPIO pin controls buzzer output.",
+    "steps": [
+      "Connect buzzer",
+      "Upload code",
+      "Power ESP32",
+      "Observe buzzer"
+    ],
+    "code": "ESP32 buzzer code",
+    "conclusion": "Basic ESP32 sound project.",
+    "image_url": "/uploads/project-images/esp32-buzzer.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "DIY Morse Code Flasher",
+    "difficulty": "Medium",
+    "description": "Flashes Morse code using LED and buzzer.",
+    "components": ["Arduino", "LED", "Buzzer", "Button"],
+    "working_principle": "Timed signals represent Morse code.",
+    "steps": [
+      "Connect components",
+      "Upload code",
+      "Power Arduino",
+      "Press button",
+      "Observe Morse signals"
+    ],
+    "code": "Arduino Morse code",
+    "conclusion": "Demonstrates communication principles.",
+    "image_url": "/uploads/project-images/morse.jpg",
+    "is_demo": true
+  },
+
+  {
+    "title": "Temperature and Humidity Indicator",
+    "difficulty": "Medium",
+    "description": "Measures environment temperature and humidity using DHT11.",
+    "components": ["Arduino", "DHT11 Sensor"],
+    "working_principle": "Sensor sends digital data to Arduino.",
+    "steps": [
+      "Connect DHT11",
+      "Install library",
+      "Upload code",
+      "Open serial monitor",
+      "Observe readings"
+    ],
+    "code": "Arduino DHT11 code",
+    "conclusion": "Foundation for weather and IoT systems.",
+    "image_url": "/uploads/project-images/dht11.jpg",
+    "is_demo": true
+  }
+]
