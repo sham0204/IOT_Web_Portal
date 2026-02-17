@@ -197,6 +197,10 @@ const startServer = async () => {
     // Initialize database
     await initializeDatabase();
     
+    // Seed demo projects
+    const { seedDemoProjects } = require('./seed/demoProjects');
+    await seedDemoProjects();
+    
     // Initialize MQTT handler
     mqttHandler.connect();
     

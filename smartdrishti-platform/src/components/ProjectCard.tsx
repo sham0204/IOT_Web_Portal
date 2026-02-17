@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useProjectManagement } from '@/hooks/useProjectManagement';
 import { useToast } from '@/hooks/use-toast';
+import { projectAPI } from '@/api';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface ProjectCardProps {
@@ -33,7 +34,7 @@ interface ProjectCardProps {
 
 const ProjectCard = ({ project, onEdit }: ProjectCardProps) => {
   const navigate = useNavigate();
-  const { isAdmin, deleteProject } = useProjectManagement();
+  const { isAdmin } = useProjectManagement();
   const { toast } = useToast();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -55,8 +56,10 @@ const ProjectCard = ({ project, onEdit }: ProjectCardProps) => {
 
   const handleDelete = async () => {
     try {
-      await deleteProject(project.id);
+      await projectAPI.delete(project.id);
       toast({ title: 'Success', description: 'Project deleted successfully' });
+      // Optionally, you can trigger a refresh of the project list here
+      // For now, we'll just close the dialog and expect the parent to handle the refresh
     } catch (error) {
       toast({ title: 'Error', description: 'Failed to delete project', variant: 'destructive' });
     } finally {

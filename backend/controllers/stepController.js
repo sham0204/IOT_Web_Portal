@@ -10,20 +10,40 @@ const getStepsByProjectId = async (req, res) => {
       [projectId]
     );
     
-    // For each step, get its media
+    // For each step, get its media and normalize fields
     const steps = [];
-    for (const step of result.rows) {
+    for (const row of result.rows) {
       const mediaResult = await query(
         `SELECT * FROM step_media WHERE step_id = ?`,
-        [step.id]
+        [row.id]
       );
-      
+
+      // Parse components if stored as JSON string
+      let components = row.components;
+      if (components && typeof components === 'string') {
+        try { components = JSON.parse(components); } catch (e) { /* keep as string */ }
+      }
+
       steps.push({
-        ...step,
-        media: mediaResult.rows || []
+        id: row.id,
+        project_id: row.project_id,
+        title: row.title,
+        description: row.description,
+        components: components || [],
+        connections: row.connections || '',
+        working: row.working || '',
+        instructions: row.instructions || '',
+        code: row.code || '',
+        conclusion: row.conclusion || '',
+        order_number: row.order_number || null,
+        step_number: row.step_number || row.order_number || null,
+        status: row.status,
+        media: mediaResult.rows || [],
+        created_at: row.created_at,
+        updated_at: row.updated_at
       });
     }
-    
+
     res.json(steps);
     
   } catch (error) {
@@ -32,21 +52,81 @@ const getStepsByProjectId = async (req, res) => {
   }
 };
 
+// Get a single step by project and step id
+const getStepById = async (req, res) => {
+  try {
+    const { projectId, stepId } = req.params;
+
+    const result = await query(
+      `SELECT * FROM steps WHERE id = ? AND project_id = ? LIMIT 1`,
+      [stepId, projectId]
+    );
+
+    if (!result.rows || result.rows.length === 0) {
+      return res.status(404).json({ error: 'Step not found' });
+    }
+
+    const row = result.rows[0];
+
+    // Get media if any
+    const mediaResult = await query(
+      `SELECT * FROM step_media WHERE step_id = ?`,
+      [row.id]
+    );
+
+    // Parse components
+    let components = row.components;
+    if (components && typeof components === 'string') {
+      try { components = JSON.parse(components); } catch (e) { /* keep as string */ }
+    }
+
+    const step = {
+      id: row.id,
+      project_id: row.project_id,
+      title: row.title,
+      description: row.description,
+      components: components || [],
+      connections: row.connections || '',
+      working: row.working || '',
+      instructions: row.instructions || '',
+      code: row.code || row.detailed_content || '',
+      conclusion: row.conclusion || '',
+      order_number: row.order_number || null,
+      step_number: row.step_number || row.order_number || null,
+      status: row.status,
+      media: mediaResult.rows || [],
+      created_at: row.created_at,
+      updated_at: row.updated_at
+    };
+
+    // Optionally include minimal project info
+    const projectRes = await query(`SELECT id, title FROM projects WHERE id = ?`, [projectId]);
+    const project = projectRes.rows && projectRes.rows[0] ? projectRes.rows[0] : null;
+
+    res.json({ project, step });
+  } catch (error) {
+    console.error('Error fetching step:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 // Add a step to a project
 const createStep = async (req, res) => {
   try {
     const { projectId } = req.params;
-    const { title, description, status } = req.body;
+    const { title, description, components, connections, working, instructions, code, conclusion, step_number, order_number, status } = req.body;
 
     // Validate required fields
     if (!title) {
       return res.status(400).json({ error: 'Title is required' });
     }
 
+    const componentsStr = components ? JSON.stringify(components) : null;
+
     const result = await query(
-      `INSERT INTO steps (project_id, title, description, status) 
-       VALUES (?, ?, ?, ?) RETURNING *`,
-      [projectId, title, description, status || 'not_started']
+      `INSERT INTO steps (project_id, title, description, components, connections, working, instructions, code, conclusion, order_number, step_number, status) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
+      [projectId, title, description || null, componentsStr, connections || null, working || null, instructions || null, code || null, conclusion || null, order_number || null, step_number || order_number || null, status || 'not_started']
     );
 
     res.status(201).json({
@@ -64,18 +144,28 @@ const createStep = async (req, res) => {
 const updateStep = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, status } = req.body;
+    const { title, description, components, connections, working, instructions, code, conclusion, step_number, order_number, status } = req.body;
     
     console.log('Updating step:', { id, title, description, status });
+
+    const componentsStr = components ? JSON.stringify(components) : null;
 
     const result = await query(
       `UPDATE steps 
        SET title = COALESCE(?, title),
            description = COALESCE(?, description),
+           components = COALESCE(?, components),
+           connections = COALESCE(?, connections),
+           working = COALESCE(?, working),
+           instructions = COALESCE(?, instructions),
+           code = COALESCE(?, code),
+           conclusion = COALESCE(?, conclusion),
+           order_number = COALESCE(?, order_number),
+           step_number = COALESCE(?, step_number),
            status = COALESCE(?, status)
        WHERE id = ?
        RETURNING *`,
-      [title, description, status, id]
+      [title, description, componentsStr, connections, working, instructions, code, conclusion, order_number, step_number, status, id]
     );
     
     console.log('Update result:', result);
@@ -187,6 +277,7 @@ const deleteMedia = async (req, res) => {
 
 module.exports = {
   getStepsByProjectId,
+  getStepById,
   createStep,
   updateStep,
   deleteStep,

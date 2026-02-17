@@ -38,6 +38,16 @@ const initializeDatabase = async () => {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Ensure new columns exist (for upgrades)
+    await query(`ALTER TABLE steps ADD COLUMN IF NOT EXISTS components TEXT;`);
+    await query(`ALTER TABLE steps ADD COLUMN IF NOT EXISTS connections TEXT;`);
+    await query(`ALTER TABLE steps ADD COLUMN IF NOT EXISTS working TEXT;`);
+    await query(`ALTER TABLE steps ADD COLUMN IF NOT EXISTS instructions TEXT;`);
+    await query(`ALTER TABLE steps ADD COLUMN IF NOT EXISTS conclusion TEXT;`);
+    await query(`ALTER TABLE steps ADD COLUMN IF NOT EXISTS step_number INTEGER;`);
+    await query(`ALTER TABLE steps ADD COLUMN IF NOT EXISTS detailed_content TEXT;`);
+    await query(`ALTER TABLE steps ADD COLUMN IF NOT EXISTS code TEXT;`);
     
     // Create projects table
     await query(`
@@ -45,10 +55,13 @@ const initializeDatabase = async () => {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id UUID REFERENCES users(id) ON DELETE SET NULL,
         title TEXT NOT NULL,
-        difficulty TEXT NOT NULL,
+        difficulty TEXT NOT NULL CHECK (difficulty IN ('Easy', 'Medium', 'Hard')),
         estimated_time TEXT,
         description TEXT,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        progress INTEGER DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
+        is_demo BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
     `);
     
@@ -59,8 +72,18 @@ const initializeDatabase = async () => {
         project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
         title TEXT NOT NULL,
         description TEXT,
-        status TEXT DEFAULT 'not_started' CHECK (status IN ('not_started', 'working', 'completed')),
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        components TEXT,
+        connections TEXT,
+        working TEXT,
+        instructions TEXT,
+        code TEXT,
+        conclusion TEXT,
+        order_number INTEGER,
+        step_number INTEGER,
+        status TEXT DEFAULT 'not_started' CHECK (status IN ('not_started', 'in_progress', 'completed')),
+        detailed_content TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
     `);
 

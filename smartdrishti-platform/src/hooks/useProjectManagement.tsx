@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { projectAPI } from '@/api';
 
 // Types
 export interface ProjectStep {
@@ -27,6 +28,10 @@ export interface Project {
   rating?: number;
   steps?: ProjectStep[];
   progress?: number;
+  // New fields for enhanced project structure
+  working_principle?: string;
+  code?: string;
+  image_url?: string;
 }
 
 export interface ProjectFormData {

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,11 +32,15 @@ interface Step {
 interface ProjectCreationFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  editingProject?: any;
+  onProjectUpdated?: () => void;
 }
 
 const ProjectCreationFormWithSteps = ({ 
   open, 
-  onOpenChange
+  onOpenChange,
+  editingProject,
+  onProjectUpdated
 }: ProjectCreationFormProps) => {
   const [formData, setFormData] = useState({
     title: '',
@@ -45,72 +49,172 @@ const ProjectCreationFormWithSteps = ({
     description: ''
   });
   
-  const [steps, setSteps] = useState<Step[]>([
-    {
-      id: 'step1',
-      title: 'Project Setup',
-      description: 'Install Arduino IDE and ESP32 board support',
-      status: 'not_started',
-      photos: [],
-      videos: []
-    },
-    {
-      id: 'step2',
-      title: 'Hardware Connection',
-      description: 'Connect DHT22 sensor to ESP32 using breadboard',
-      status: 'not_started',
-      photos: [],
-      videos: []
-    },
-    {
-      id: 'step3',
-      title: 'Library Installation',
-      description: 'Install DHT sensor library and WiFi manager',
-      status: 'not_started',
-      photos: [],
-      videos: []
-    },
-    {
-      id: 'step4',
-      title: 'Basic Code',
-      description: 'Write code to read temperature and humidity data',
-      status: 'not_started',
-      photos: [],
-      videos: []
-    },
-    {
-      id: 'step5',
-      title: 'WiFi Connection',
-      description: 'Configure WiFi credentials and connect to network',
-      status: 'not_started',
-      photos: [],
-      videos: []
-    },
-    {
-      id: 'step6',
-      title: 'Data Logging',
-      description: 'Send sensor data to cloud service (ThingSpeak)',
-      status: 'not_started',
-      photos: [],
-      videos: []
-    },
-    {
-      id: 'step7',
-      title: 'Dashboard Creation',
-      description: 'Create web dashboard to visualize data',
-      status: 'not_started',
-      photos: [],
-      videos: []
-    },
-    {
-      id: 'step8',
-      title: 'Testing & Calibration',
-      description: 'Test the complete system and calibrate readings',
-      status: 'not_started',
-      photos: [],
-      videos: []
+  const [steps, setSteps] = useState<Step[]>([]);
+  
+  // Initialize form data when editing a project
+  useEffect(() => {
+    if (editingProject) {
+      setFormData({
+        title: editingProject.title || '',
+        difficulty: editingProject.difficulty || 'Easy',
+        estimatedTime: editingProject.estimated_time || '',
+        description: editingProject.description || ''
+      });
+      
+      // Initialize steps with data from editingProject
+      if (editingProject.steps && Array.isArray(editingProject.steps)) {
+        setSteps(editingProject.steps.map((step: any, index: number) => ({
+          id: step.id || `step-${index}-${Date.now()}`,
+          title: step.title || '',
+          description: step.description || '',
+          status: step.status || 'not_started',
+          photos: [],
+          videos: []
+        })));
+      } else {
+        setSteps([
+          {
+            id: 'step1',
+            title: 'Project Setup',
+            description: 'Install Arduino IDE and ESP32 board support',
+            status: 'not_started',
+            photos: [],
+            videos: []
+          },
+          {
+            id: 'step2',
+            title: 'Hardware Connection',
+            description: 'Connect DHT22 sensor to ESP32 using breadboard',
+            status: 'not_started',
+            photos: [],
+            videos: []
+          },
+          {
+            id: 'step3',
+            title: 'Library Installation',
+            description: 'Install DHT sensor library and WiFi manager',
+            status: 'not_started',
+            photos: [],
+            videos: []
+          },
+          {
+            id: 'step4',
+            title: 'Basic Code',
+            description: 'Write code to read temperature and humidity data',
+            status: 'not_started',
+            photos: [],
+            videos: []
+          },
+          {
+            id: 'step5',
+            title: 'WiFi Connection',
+            description: 'Configure WiFi credentials and connect to network',
+            status: 'not_started',
+            photos: [],
+            videos: []
+          },
+          {
+            id: 'step6',
+            title: 'Data Logging',
+            description: 'Send sensor data to cloud service (ThingSpeak)',
+            status: 'not_started',
+            photos: [],
+            videos: []
+          },
+          {
+            id: 'step7',
+            title: 'Dashboard Creation',
+            description: 'Create web dashboard to visualize data',
+            status: 'not_started',
+            photos: [],
+            videos: []
+          },
+          {
+            id: 'step8',
+            title: 'Testing & Calibration',
+            description: 'Test the complete system and calibrate readings',
+            status: 'not_started',
+            photos: [],
+            videos: []
+          }
+        ]);
+      }
+    } else {
+      // Reset to default when not editing
+      setFormData({
+        title: '',
+        difficulty: 'Easy',
+        estimatedTime: '',
+        description: ''
+      });
+      setSteps([
+        {
+          id: 'step1',
+          title: 'Project Setup',
+          description: 'Install Arduino IDE and ESP32 board support',
+          status: 'not_started',
+          photos: [],
+          videos: []
+        },
+        {
+          id: 'step2',
+          title: 'Hardware Connection',
+          description: 'Connect DHT22 sensor to ESP32 using breadboard',
+          status: 'not_started',
+          photos: [],
+          videos: []
+        },
+        {
+          id: 'step3',
+          title: 'Library Installation',
+          description: 'Install DHT sensor library and WiFi manager',
+          status: 'not_started',
+          photos: [],
+          videos: []
+        },
+        {
+          id: 'step4',
+          title: 'Basic Code',
+          description: 'Write code to read temperature and humidity data',
+          status: 'not_started',
+          photos: [],
+          videos: []
+        },
+        {
+          id: 'step5',
+          title: 'WiFi Connection',
+          description: 'Configure WiFi credentials and connect to network',
+          status: 'not_started',
+          photos: [],
+          videos: []
+        },
+        {
+          id: 'step6',
+          title: 'Data Loading',
+          description: 'Send sensor data to cloud service (ThingSpeak)',
+          status: 'not_started',
+          photos: [],
+          videos: []
+        },
+        {
+          id: 'step7',
+          title: 'Dashboard Creation',
+          description: 'Create web dashboard to visualize data',
+          status: 'not_started',
+          photos: [],
+          videos: []
+        },
+        {
+          id: 'step8',
+          title: 'Testing & Calibration',
+          description: 'Test the complete system and calibrate readings',
+          status: 'not_started',
+          photos: [],
+          videos: []
+        }
+      ]);
     }
-  ]);
+  }, [editingProject, open]);
 
   const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
   const videoInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
@@ -212,8 +316,20 @@ const ProjectCreationFormWithSteps = ({
         }))
       };
       
-      await projectAPI.createProject(projectPayload);
-      toast.success('Project created successfully!');
+      if (editingProject && editingProject.id) {
+        // Update existing project
+        await projectAPI.update(editingProject.id, projectPayload);
+        toast.success('Project updated successfully!');
+      } else {
+        // Create new project
+        await projectAPI.createProject(projectPayload);
+        toast.success('Project created successfully!');
+      }
+      
+      // Call the callback if provided
+      if (onProjectUpdated) {
+        onProjectUpdated();
+      }
       
       // Reset form
       setFormData({

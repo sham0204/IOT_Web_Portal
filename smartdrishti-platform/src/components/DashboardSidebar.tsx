@@ -1,9 +1,11 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, LayoutDashboard, Layers, Activity, BookOpen, Settings, LogOut, User, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { authAPI } from "@/api";
+import { toast } from "sonner";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -16,7 +18,22 @@ const menuItems = [
 
 export const DashboardSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await authAPI.logout();
+      toast.success("Logged out successfully");
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still clear local storage and redirect even if API call fails
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      navigate('/login');
+      toast.success("Logged out successfully");
+    }
+  };
 
   return (
     <motion.aside
@@ -92,6 +109,7 @@ export const DashboardSidebar = () => {
         <Button
           variant="ghost"
           className={cn("w-full mt-3 justify-start gap-3", collapsed && "justify-center")}
+          onClick={handleLogout}
         >
           <LogOut className="w-5 h-5" />
           {!collapsed && <span>Logout</span>}

@@ -4,7 +4,8 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { BookOpen, Search, Plus, Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BookOpen, Search, Plus, Loader2, Filter } from "lucide-react";
 import ProjectCard from "@/components/ProjectCard";
 import ProjectCreationFormWithSteps from "@/components/ProjectCreationFormWithSteps";
 import { projectAPI } from "@/api";
@@ -13,7 +14,8 @@ import { toast } from "sonner";
 const DemoProjects = () => {
   const [projects, setProjects] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null);
+  const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("newest");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingProject, setEditingProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -46,9 +48,9 @@ const DemoProjects = () => {
     loadProjects();
   }, []);
 
-  // Filter projects
-  const filteredProjects = (() => {
-    let result = projects;
+  // Filter and sort projects
+  const processedProjects = (() => {
+    let result = [...projects];
     
     // Apply search filter
     if (searchQuery) {
@@ -60,9 +62,26 @@ const DemoProjects = () => {
     }
     
     // Apply difficulty filter
-    if (difficultyFilter) {
+    if (difficultyFilter !== "all") {
       result = result.filter(project => project.difficulty === difficultyFilter);
     }
+    
+    // Apply sorting
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case "newest":
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case "oldest":
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case "progress":
+          return (b.progress || 0) - (a.progress || 0);
+        case "difficulty":
+          const difficultyOrder = { "Easy": 1, "Medium": 2, "Hard": 3 };
+          return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
+        default:
+          return 0;
+      }
+    });
     
     return result;
   })();
@@ -74,6 +93,11 @@ const DemoProjects = () => {
   const handleEditProject = (project: any) => {
     setEditingProject(project);
     setShowCreateForm(true);
+  };
+
+  const handleProjectUpdated = () => {
+    // Refresh the project list after successful update
+    loadProjects();
   };
 
   const handleCloseForm = () => {
@@ -118,8 +142,8 @@ const DemoProjects = () => {
               <BookOpen className="w-6 h-6 text-secondary-foreground" />
             </div>
             <div>
-              <h1 className="text-3xl font-heading font-bold">Demo Projects</h1>
-              <p className="text-muted-foreground">Learn IoT through hands-on projects</p>
+              <h1 className="text-3xl font-heading font-bold">IoT Learning Projects</h1>
+              <p className="text-muted-foreground">Explore hands-on IoT projects to enhance your skills</p>
             </div>
           </div>
 
@@ -159,7 +183,7 @@ const DemoProjects = () => {
 
         {/* Search & Filter */}
         <motion.div
-          className="flex flex-col sm:flex-row gap-4"
+          className="flex flex-col md:flex-row gap-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -175,25 +199,39 @@ const DemoProjects = () => {
           </div>
           
           <div className="flex gap-2">
-            {["Easy", "Medium", "Hard"].map((difficulty) => (
-              <Button
-                key={difficulty}
-                variant={difficultyFilter === difficulty ? "default" : "outline"}
-                size="sm"
-                onClick={() => setDifficultyFilter(difficultyFilter === difficulty ? null : difficulty)}
-              >
-                {difficulty}
-              </Button>
-            ))}
+            <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+              <SelectTrigger className="w-[140px]">
+                <Filter className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Difficulty" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Levels</SelectItem>
+                <SelectItem value="Easy">Easy</SelectItem>
+                <SelectItem value="Medium">Medium</SelectItem>
+                <SelectItem value="Hard">Hard</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+                <SelectItem value="progress">Progress</SelectItem>
+                <SelectItem value="difficulty">Difficulty</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           
 
         </motion.div>
 
         {/* Projects Grid */}
-        {filteredProjects.length > 0 ? (
+        {processedProjects.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.map((project: any, index: number) => {
+            {processedProjects.map((project: any, index: number) => {
               console.log(`Rendering project card ${index}:`, project);
               return (
                 <ProjectCard
@@ -208,20 +246,39 @@ const DemoProjects = () => {
           <Card className="glass-card">
             <CardContent className="p-12 text-center">
               <p className="text-muted-foreground">
-                {searchQuery || difficultyFilter 
+                {searchQuery || difficultyFilter !== "all" 
                   ? "No projects found matching your criteria." 
                   : "No projects available yet."}
               </p>
-
+              {(searchQuery || difficultyFilter !== "all") && (
+                <Button 
+                  variant="outline" 
+                  className="mt-4"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setDifficultyFilter("all");
+                    setSortBy("newest");
+                  }}
+                >
+                  Clear Filters
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}
+                
+        {/* Stats */}
+        <div className="text-center text-muted-foreground text-sm">
+          Showing {processedProjects.length} of {projects.length} projects
+        </div>
       </div>
 
       {/* Project Creation Form with Steps */}
       <ProjectCreationFormWithSteps
         open={showCreateForm}
         onOpenChange={handleCloseForm}
+        editingProject={editingProject}
+        onProjectUpdated={handleProjectUpdated}
       />
     </DashboardLayout>
   );

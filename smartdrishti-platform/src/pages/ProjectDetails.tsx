@@ -17,7 +17,10 @@ import {
   Check,
   Star,
   ExternalLink,
-  Loader2
+  Loader2,
+  Lightbulb,
+  Code,
+  Image
 } from "lucide-react";
 import { toast } from "sonner";
 import { projectAPI, stepAPI } from "@/api";
@@ -237,7 +240,11 @@ const ProjectDetails = () => {
         ...projectData,
         components: projectData.components || ["ESP32", "DHT22", "Breadboard"],
         duration: projectData.estimated_time || "2-3 hours",
-        steps: projectData.steps || []
+        steps: projectData.steps || [],
+        working_principle: projectData.working_principle || "",
+        code: projectData.code || "",
+        image_url: projectData.image_url || "",
+        conclusion: projectData.conclusion || ""
       };
       
       setProject(normalizedProject);
@@ -267,7 +274,7 @@ const ProjectDetails = () => {
   
   // Calculate overall progress
   const calculateProgress = () => {
-    if (!project || !project.steps) return 0;
+    if (!project || !project.steps || project.steps.length === 0) return 0;
     const completedSteps = project.steps.filter((step: any) => step.status === 'completed').length;
     return Math.round((completedSteps / project.steps.length) * 100);
   };
@@ -403,7 +410,7 @@ const ProjectDetails = () => {
                 </div>
                 <div className="flex items-center gap-1">
                   <Cpu className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">{project.steps?.length || 0} Steps</span>
+                  <span className="text-sm text-muted-foreground">{(project.steps?.length || 0)} Steps</span>
                 </div>
               </div>
             </div>
@@ -437,7 +444,7 @@ const ProjectDetails = () => {
               <CardTitle className="flex items-center justify-between">
                 <span>Project Progress</span>
                 <span className="text-sm font-normal text-muted-foreground">
-                  {project.steps?.filter((s: any) => s.status === 'completed').length || 0}/{project.steps?.length || 0} Steps Completed
+                  {(project.steps?.filter((s: any) => s.status === 'completed').length || 0)}/{(project.steps?.length || 0)} Steps Completed
                 </span>
               </CardTitle>
             </CardHeader>
@@ -464,11 +471,66 @@ const ProjectDetails = () => {
           </Card>
         </motion.div>
 
+        {/* Project Image */}
+        {project.image_url && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Image className="w-5 h-5" />
+                  Project Image
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-center">
+                  <img 
+                    src={project.image_url} 
+                    alt={project.title}
+                    className="max-w-full h-auto rounded-lg border border-border"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Working Principle */}
+        {project.working_principle && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lightbulb className="w-5 h-5" />
+                  Working Principle
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="prose prose-invert max-w-none">
+                  <p className="text-foreground leading-relaxed">
+                    {project.working_principle}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
         {/* Components Needed */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.35 }}
         >
           <Card className="glass-card">
             <CardHeader>
@@ -479,11 +541,15 @@ const ProjectDetails = () => {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {project.components.map((component, index) => (
-                  <Badge key={index} variant="secondary" className="px-3 py-1.5">
-                    {component}
-                  </Badge>
-                ))}
+                {project.components && project.components.length > 0 ? (
+                  project.components.map((component, index) => (
+                    <Badge key={index} variant="secondary" className="px-3 py-1.5">
+                      {component}
+                    </Badge>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground text-sm">No components specified</p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -493,7 +559,7 @@ const ProjectDetails = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.4 }}
         >
           <Card className="glass-card">
             <CardHeader>
@@ -501,71 +567,85 @@ const ProjectDetails = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {project.steps.map((step, index) => (
-                  <div 
-                    key={step.id} 
-                    className={`p-4 rounded-lg border transition-all ${
-                      index === currentStep 
-                        ? "border-accent bg-accent/10 ring-2 ring-accent/30" 
-                        : project.steps[index]?.status === 'completed'
-                          ? "border-success/30 bg-success/5"
-                          : "border-border hover:bg-muted/50"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                            index === currentStep 
-                              ? "bg-accent text-accent-foreground" 
-                              : project.steps[index]?.status === 'completed'
-                                ? "bg-success text-success-foreground"
-                                : "bg-muted text-muted-foreground"
-                          }`}>
-                            {project.steps[index]?.status === 'completed' ? (
-                              <Check className="w-4 h-4" />
-                            ) : (
-                              index + 1
+                {project.steps && project.steps.length > 0 ? (
+                  project.steps.map((step, index) => (
+                    <div 
+                      key={step.id} 
+                      onClick={() => navigate(`/projects/${projectId}/steps/${step.id}`)}
+                      role="button"
+                      tabIndex={0}
+                      className={`p-4 rounded-lg border transition-all cursor-pointer ${
+                        index === currentStep 
+                          ? "border-accent bg-accent/10 ring-2 ring-accent/30" 
+                          : project.steps[index]?.status === 'completed'
+                            ? "border-success/30 bg-success/5"
+                            : "border-border hover:bg-muted/50"
+                      }`}
+                      onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/projects/${projectId}/steps/${step.id}`); }}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                              index === currentStep 
+                                ? "bg-accent text-accent-foreground" 
+                                : project.steps[index]?.status === 'completed'
+                                  ? "bg-success text-success-foreground"
+                                  : "bg-muted text-muted-foreground"
+                            }`}>
+                              {project.steps[index]?.status === 'completed' ? (
+                                <Check className="w-4 h-4" />
+                              ) : (
+                                index + 1
+                              )}
+                            </div>
+                            <h3 className="font-medium">{step.title || `Step ${index + 1}`}</h3>
+                            {step.timeEstimate && (
+                              <Badge variant="outline" className="text-xs">
+                                {step.timeEstimate}
+                              </Badge>
                             )}
                           </div>
-                          <h3 className="font-medium">{step.title}</h3>
-                          <Badge variant="outline" className="text-xs">
-                            {step.timeEstimate || 'N/A'}
-                          </Badge>
+                          <p className="text-sm text-muted-foreground ml-11">
+                            {step.description || 'No description available'}
+                          </p>
                         </div>
-                        <p className="text-sm text-muted-foreground ml-11">{step.description || 'No description available'}</p>
+                        
+                        {project.steps[index]?.status !== 'completed' && (
+                          <Button 
+                            size="sm" 
+                            onClick={(e) => { e.stopPropagation(); handleStepComplete(step.id, index); }}
+                            className="ml-4"
+                            disabled={index > currentStep}
+                          >
+                            <Play className="w-4 h-4 mr-2" />
+                            {index === currentStep ? 'Mark Complete' : 'Start Step'}
+                          </Button>
+                        )}
+                        
+                        {project.steps[index]?.status === 'completed' && (
+                          <div className="flex items-center gap-2 text-success ml-4">
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span className="text-sm">Completed</span>
+                          </div>
+                        )}
                       </div>
                       
-                      {project.steps[index]?.status !== 'completed' && (
-                        <Button 
-                          size="sm" 
-                          onClick={() => handleStepComplete(step.id, index)}
-                          className="ml-4"
-                          disabled={index > currentStep}
-                        >
-                          <Play className="w-4 h-4 mr-2" />
-                          {index === currentStep ? 'Mark Complete' : 'Start Step'}
-                        </Button>
-                      )}
-                      
-                      {project.steps[index]?.status === 'completed' && (
-                        <div className="flex items-center gap-2 text-success ml-4">
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span className="text-sm">Completed</span>
+                      {index === currentStep && project.steps[index]?.status !== 'completed' && (
+                        <div className="mt-3 ml-11">
+                          <Progress value={75} className="h-2" />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Working on this step...
+                          </p>
                         </div>
                       )}
                     </div>
-                    
-                    {index === currentStep && project.steps[index]?.status !== 'completed' && (
-                      <div className="mt-3 ml-11">
-                        <Progress value={75} className="h-2" />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Working on this step...
-                        </p>
-                      </div>
-                    )}
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No steps available for this project</p>
                   </div>
-                ))}
+                )}
               </div>
               
               {!isCompleted && overallProgress === 0 && project.steps && project.steps.length > 0 && (
@@ -579,6 +659,53 @@ const ProjectDetails = () => {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Code Section */}
+        {project.code && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45 }}
+          >
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Code className="w-5 h-5" />
+                  Source Code
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-muted rounded-lg p-4 overflow-x-auto">
+                  <pre className="text-sm text-foreground whitespace-pre-wrap">
+                    <code>{project.code}</code>
+                  </pre>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Conclusion */}
+        {project.conclusion && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle>Conclusion</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="prose prose-invert max-w-none">
+                  <p className="text-foreground leading-relaxed">
+                    {project.conclusion}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
       </div>
     </DashboardLayout>
   );

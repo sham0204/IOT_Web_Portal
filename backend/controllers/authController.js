@@ -8,7 +8,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-producti
 // Register a new user
 const registerUser = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, role } = req.body;
 
     // Validate input
     if (!username || !email || !password) {
@@ -16,6 +16,10 @@ const registerUser = async (req, res) => {
         error: 'Username, email, and password are required' 
       });
     }
+    
+    // Validate role if provided
+    const validRoles = ['user', 'admin'];
+    const userRole = validRoles.includes(role) ? role : 'user';
 
     // Check if user already exists
     const existingUser = await query('SELECT id FROM users WHERE email = ? OR username = ?', [email, username]);
@@ -31,9 +35,9 @@ const registerUser = async (req, res) => {
 
     // Insert new user
     const result = await query(`
-      INSERT INTO users (username, email, password_hash) 
-      VALUES (?, ?, ?) 
-    `, [username, email, passwordHash]);
+      INSERT INTO users (username, email, password_hash, role) 
+      VALUES (?, ?, ?, ?) 
+    `, [username, email, passwordHash, userRole]);
 
     // Get the user we just inserted
     const userResult = await query('SELECT id, username, email, role, created_at FROM users WHERE email = ?', [email]);

@@ -1,15 +1,32 @@
 import { useState } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Monitor, User, Users, Shield, CreditCard, Key, LogOut, Settings, Eye, Tag, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useTheme } from '@/hooks/useTheme';
+import { authAPI } from '@/api';
+import { toast } from 'sonner';
 
 const SettingsLayout = () => {
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await authAPI.logout();
+      toast.success("Logged out successfully");
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still clear local storage and redirect even if API call fails
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      navigate('/login');
+      toast.success("Logged out successfully");
+    }
+  };
 
   const navItems = [
     { 
@@ -114,7 +131,7 @@ const SettingsLayout = () => {
             <span className="text-sm font-medium">Dark Mode</span>
             <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} />
           </div>
-          <Button variant="outline" className="w-full">
+          <Button variant="outline" className="w-full" onClick={handleLogout}>
             <LogOut className="h-4 w-4 mr-2" />
             Logout
           </Button>

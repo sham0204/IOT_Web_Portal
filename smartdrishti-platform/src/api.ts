@@ -39,7 +39,7 @@ apiClient.interceptors.response.use(
 
 // Auth API functions
 export const authAPI = {
-  register: async (userData: { username: string; email: string; password: string }) => {
+  register: async (userData: { username: string; email: string; password: string; role?: string }) => {
     const response = await apiClient.post('/auth/register', userData);
     return response.data;
   },
@@ -47,6 +47,14 @@ export const authAPI = {
   login: async (credentials: { email: string; password: string }) => {
     const response = await apiClient.post('/auth/login', credentials);
     return response.data;
+  },
+
+  logout: async () => {
+    // Clear local storage and redirect
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+    return { message: 'Logged out successfully' };
   },
 
   getProfile: async () => {
@@ -108,10 +116,47 @@ export const projectAPI = {
   },
 };
 
+// IoT API functions
+export const iotAPI = {
+  getDevices: async () => {
+    const response = await apiClient.get('/iot/devices');
+    return response.data;
+  },
+
+  getDeviceById: async (deviceId: string) => {
+    const response = await apiClient.get(`/iot/devices/${deviceId}`);
+    return response.data;
+  },
+
+  getSensorData: async (deviceId: string, hours: number = 24) => {
+    const response = await apiClient.get(`/iot/sensor-data/${deviceId}?hours=${hours}`);
+    return response.data;
+  },
+
+  getLatestSensorData: async (deviceId: string) => {
+    const response = await apiClient.get(`/iot/sensor-data/latest/${deviceId}`);
+    return response.data;
+  },
+
+  getDeviceStatus: async (deviceId: string) => {
+    const response = await apiClient.get(`/iot/devices/${deviceId}/status`);
+    return response.data;
+  },
+
+  predictDeviceFailure: async (deviceId: string) => {
+    const response = await apiClient.get(`/iot/devices/${deviceId}/predict-failure`);
+    return response.data;
+  },
+};
+
 // Step API functions
 export const stepAPI = {
   getSteps: async (projectId: string) => {
     const response = await apiClient.get(`/projects/${projectId}/steps`);
+    return response.data;
+  },
+  getStep: async (projectId: string, stepId: string) => {
+    const response = await apiClient.get(`/projects/${projectId}/steps/${stepId}`);
     return response.data;
   },
   

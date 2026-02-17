@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Activity, RefreshCw, Download, Trash2, Play, Pause } from "lucide-react";
+import { Activity, RefreshCw, Download, Trash2, Play, Pause, Brain } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 
 // Socket.io client
@@ -55,6 +56,7 @@ const initialData = Array.from({ length: 20 }, (_, i) => {
 });
 
 const LiveMonitor = () => {
+  const navigate = useNavigate();
   const [data, setData] = useState(initialData);
   const [isLive, setIsLive] = useState(true);
   const [selectedMetric, setSelectedMetric] = useState("temperature");

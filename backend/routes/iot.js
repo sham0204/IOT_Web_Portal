@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { query } = require('../db-local');
+const { predictDeviceFailure } = require('../controllers/predictiveMaintenanceController');
 
 // Get all IoT devices
 router.get('/devices', async (req, res) => {
@@ -274,6 +275,9 @@ router.get('/sensor-data/aggregated/:deviceId', async (req, res) => {
     });
   }
 });
+
+// Predictive maintenance analysis
+router.get('/devices/:deviceId/predict-failure', predictDeviceFailure);
 
 // Get real-time device status
 router.get('/devices/:deviceId/status', async (req, res) => {

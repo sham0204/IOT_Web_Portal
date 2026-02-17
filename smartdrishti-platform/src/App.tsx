@@ -15,8 +15,10 @@ import LiveMonitor from "./pages/LiveMonitor";
 import DemoProjects from "./pages/DemoProjects";
 import ProjectDetails from "./pages/ProjectDetails";
 import ProjectSummary from "./pages/ProjectSummary";
+import StepDetail from "./pages/StepDetail";
 import TestNavigation from "./pages/TestNavigation";
 import Profile from "./pages/Profile";
+import PredictiveMaintenance from "./pages/PredictiveMaintenance";
 import NotFound from "./pages/NotFound";
 import SettingsLayout from "./pages/settings/SettingsLayout";
 import GeneralSettings from "./pages/settings/GeneralSettings";
@@ -50,10 +52,12 @@ const App = () => (
               <Route path="/monitor" element={<LiveMonitor />} />
               <Route path="/projects" element={<DemoProjects />} />
               <Route path="/projects/:projectId" element={<ProjectDetails />} />
+              <Route path="/projects/:projectId/steps/:stepId" element={<StepDetail />} />
               <Route path="/projects/:projectId/summary" element={<ProjectSummary />} />
               <Route path="/test-nav" element={<TestNavigation />} />
               <Route path="/project-setup" element={<ProjectSetupPage />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/devices/:deviceId/predictive-maintenance" element={<PredictiveMaintenance />} />
               <Route path="/learning" element={<LearningHub />} />
               <Route path="/settings" element={<SettingsLayout /> }>
                 <Route index element={<GeneralSettings />} />
