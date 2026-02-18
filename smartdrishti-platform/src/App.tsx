@@ -13,7 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import Templates from "./pages/Templates";
 import LiveMonitor from "./pages/LiveMonitor";
 import DemoProjects from "./pages/DemoProjects";
-import ProjectDetails from "./pages/ProjectDetails";
+import ProjectDetail from "./pages/ProjectDetail";
 import ProjectSummary from "./pages/ProjectSummary";
 import StepDetail from "./pages/StepDetail";
 import TestNavigation from "./pages/TestNavigation";
@@ -51,7 +51,7 @@ const App = () => (
               <Route path="/templates" element={<Templates />} />
               <Route path="/monitor" element={<LiveMonitor />} />
               <Route path="/projects" element={<DemoProjects />} />
-              <Route path="/projects/:projectId" element={<ProjectDetails />} />
+              <Route path="/projects/:id" element={<ProjectDetail />} />
               <Route path="/projects/:projectId/steps/:stepId" element={<StepDetail />} />
               <Route path="/projects/:projectId/summary" element={<ProjectSummary />} />
               <Route path="/test-nav" element={<TestNavigation />} />

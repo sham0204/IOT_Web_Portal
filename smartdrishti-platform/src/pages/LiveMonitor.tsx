@@ -12,6 +12,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 // Socket.io client
 import io from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
+import { iotAPI } from "@/api";
 
 // Define types for our sensor data
 interface SensorReading {
@@ -67,10 +68,13 @@ const LiveMonitor = () => {
   const socketRef = useRef<Socket | null>(null);
   const selectedDeviceRef = useRef<string | null>(null);
 
-  // Connect to WebSocket server
+  // Connect to WebSocket server using environment variable
   useEffect(() => {
+    // Use environment variable for backend URL, fallback to localhost for development
+    const backendUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+    
     // Connect to the backend WebSocket
-    socketRef.current = io('http://localhost:5000', {
+    socketRef.current = io(backendUrl, {
       transports: ['websocket']
     });
 
@@ -132,11 +136,10 @@ const LiveMonitor = () => {
       });
     });
 
-    // Fetch available devices
+    // Fetch available devices using centralized API
     const fetchDevices = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/iot/devices');
-        const result = await response.json();
+        const result = await iotAPI.getDevices();
         if (result.success) {
           setDevices(result.devices.map((d: any) => ({
             id: d.deviceId,
