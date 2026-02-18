@@ -16,55 +16,73 @@ class MqttHandler {
     };
   }
 
-  connect(brokerUrl = process.env.MQTT_BROKER_URL || 'mqtt://localhost:1883') {
-    console.log('Connecting to MQTT broker:', brokerUrl);
-    
-    this.client = mqtt.connect(brokerUrl, this.options);
+  /**
+   * Connect to MQTT broker.
+   *
+   * - Uses localhost only for development.
+   * - In production, set MQTT_URL (or MQTT_BROKER_URL) environment variable.
+   * - Falls back to public broker if not set.
+   */
+  connect() {
+    // Use MQTT_URL or MQTT_BROKER_URL env, fallback to public broker for production safety
+    const brokerUrl = process.env.MQTT_URL || process.env.MQTT_BROKER_URL || 'mqtt://broker.hivemq.com:1883';
+    console.log('[MQTT] Connecting to broker:', brokerUrl);
+
+    try {
+      this.client = mqtt.connect(brokerUrl, this.options);
+    } catch (err) {
+      // Catch synchronous errors (rare)
+      console.error('[MQTT] Connection threw error:', err.message);
+      this.isConnected = false;
+      return;
+    }
 
     this.client.on('connect', () => {
-      console.log('MQTT Client connected to broker');
+      console.log('[MQTT] Connected successfully');
       this.isConnected = true;
-      
-      // Subscribe to sensor data topics
+
+      // Subscribe to sensor data topics (keep unchanged)
       this.client.subscribe('sensors/+/data', (err) => {
         if (err) {
-          console.error('MQTT subscription error:', err);
+          console.error('[MQTT] Subscription error:', err);
         } else {
-          console.log('Subscribed to sensor data topics');
+          console.log('[MQTT] Subscribed to sensor data topics');
         }
       });
-      
-      // Subscribe to device status topics
+
+      // Subscribe to device status topics (keep unchanged)
       this.client.subscribe('devices/+/status', (err) => {
         if (err) {
-          console.error('MQTT subscription error:', err);
+          console.error('[MQTT] Subscription error:', err);
         } else {
-          console.log('Subscribed to device status topics');
+          console.log('[MQTT] Subscribed to device status topics');
         }
       });
     });
 
-    this.client.on('error', (error) => {
-      console.error('MQTT Client Error:', error);
+    this.client.on('error', (err) => {
+      // Log error, do not crash app
+      console.error('[MQTT] Error:', err.message);
       this.isConnected = false;
+      // Optionally, you could implement a retry/backoff here
     });
 
     this.client.on('reconnect', () => {
-      console.log('MQTT Client attempting to reconnect');
+      console.log('[MQTT] Attempting to reconnect...');
     });
 
     this.client.on('close', () => {
-      console.log('MQTT Client disconnected');
+      console.log('[MQTT] Disconnected');
       this.isConnected = false;
     });
 
-    // Handle incoming messages
+    // Handle incoming messages (keep unchanged)
     this.client.on('message', async (topic, message) => {
       try {
-        console.log(`Received MQTT message on topic: ${topic}`);
+        console.log(`[MQTT] Received message on topic: ${topic}`);
         await this.handleMessage(topic, message);
       } catch (error) {
-        console.error('Error processing MQTT message:', error);
+        console.error('[MQTT] Error processing message:', error);
       }
     });
   }

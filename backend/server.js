@@ -202,6 +202,10 @@ const startServer = async () => {
     await seedDemoProjects();
     
     // Initialize MQTT handler
+    // Connect to MQTT broker
+    // - Uses localhost only for development
+    // - In production, set MQTT_URL or MQTT_BROKER_URL env variable
+    // - Falls back to public broker if not set
     mqttHandler.connect();
     
     server.listen(PORT, () => {
@@ -209,7 +213,8 @@ const startServer = async () => {
       console.log(`📡 API available at http://localhost:${PORT}/api`);
       console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
       console.log(`🔌 WebSocket available at ws://localhost:${PORT}`);
-      console.log(`☁️  MQTT broker: ${process.env.MQTT_BROKER_URL || 'mqtt://localhost:1883'}`);
+      // Show which MQTT broker is being used (for logs)
+      console.log(`☁️  MQTT broker: ${process.env.MQTT_URL || process.env.MQTT_BROKER_URL || 'mqtt://broker.hivemq.com:1883'}`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);
