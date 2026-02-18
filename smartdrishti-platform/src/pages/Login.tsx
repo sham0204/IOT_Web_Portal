@@ -40,9 +40,10 @@ const Login = () => {
 
       navigate("/dashboard");
     } catch (error: any) {
+      const serverMessage = error?.response?.data?.error || error?.message || 'Invalid email or password';
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid email or password",
+        description: serverMessage,
         variant: "destructive",
       });
     } finally {
