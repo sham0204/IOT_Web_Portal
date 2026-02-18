@@ -1,9 +1,7 @@
 import axios from "axios";
 
-// Centralized API config for production and development
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-// Debug log in development
 if (import.meta.env.DEV) {
   console.log("API_BASE_URL:", API_BASE);
 }
@@ -14,7 +12,6 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" }
 });
 
-// Add response interceptor to handle auth errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -27,25 +24,16 @@ api.interceptors.response.use(
   }
 );
 
-// Auth API functions with proper error handling
-export async function login(data: { email: string; password: string }) {
-  try {
+export const authAPI = {
+  async login(data: { email: string; password: string }) {
     const res = await api.post("/auth/login", data);
     return res.data;
-  } catch (err: any) {
-    console.error("AUTH ERROR:", err.response?.data || err.message);
-    throw new Error(err.response?.data?.message || "Server connection failed");
-  }
-}
+  },
 
-export async function signup(data: { email: string; password: string; name: string }) {
-  try {
+  async signup(data: { email: string; password: string; name: string }) {
     const res = await api.post("/auth/register", data);
     return res.data;
-  } catch (err: any) {
-    console.error("AUTH ERROR:", err.response?.data || err.message);
-    throw new Error(err.response?.data?.message || "Server connection failed");
   }
-}
+};
 
 export default api;
