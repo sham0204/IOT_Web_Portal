@@ -23,22 +23,38 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Create HTTP server and socket.io
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:8080",
+  "http://localhost:8081",
+  "https://iotwebportal.vercel.app"
+];
+
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || ['http://localhost:8080', 'http://localhost:8081', 'http://localhost:5173'],
-    methods: ['GET', 'POST']
+    origin: allowedOrigins,
+    methods: ["GET", "POST"]
   }
 });
 
 // Make io instance available globally for MQTT handler
 global.appIO = io;
 
+
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || ['http://localhost:8080', 'http://localhost:8081', 'http://localhost:5173'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  credentials: true
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log("Blocked by CORS:", origin);
+      callback(null, false);
+    }
+  },
+  credentials: true,
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+  allowedHeaders: ["Content-Type","Authorization"]
 }));
 
 app.use(express.json());
