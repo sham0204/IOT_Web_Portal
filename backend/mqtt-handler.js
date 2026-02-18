@@ -88,27 +88,56 @@ class MqttHandler {
   }
 
   async handleMessage(topic, message) {
+    const payload = message.toString();
+    console.log(`Processing MQTT message: ${payload}`);
+
+    // Parse the topic to determine the type
+    const topicParts = topic.split('/');
+    const deviceType = topicParts[0];
+    const deviceId = topicParts[1];
+    const dataType = topicParts[2];
+
+    // Try to parse as JSON, fallback to plain text
+    let data = null;
+    let isJson = false;
     try {
-      const payload = message.toString();
-      console.log(`Processing MQTT message: ${payload}`);
+      data = JSON.parse(payload);
+      isJson = true;
+      console.log('MQTT JSON:', data);
+    } catch (err) {
+      // Not valid JSON, treat as plain text
+      data = payload;
+      console.log('MQTT TEXT:', data);
+    }
 
-      // Parse the topic to determine the type
-      const topicParts = topic.split('/');
-      const deviceType = topicParts[0];
-      const deviceId = topicParts[1];
-      const dataType = topicParts[2];
+    // Handle sensor data (expecting JSON)
+    if (deviceType === 'sensors' && dataType === 'data' && isJson) {
+      await this.processSensorData(deviceId, data);
+      return;
+    }
 
-      if (deviceType === 'sensors' && dataType === 'data') {
-        // Parse sensor data
-        const sensorData = JSON.parse(payload);
-        await this.processSensorData(deviceId, sensorData);
-      } else if (deviceType === 'devices' && dataType === 'status') {
-        // Parse device status
-        const statusData = JSON.parse(payload);
-        await this.processDeviceStatus(deviceId, statusData);
+    // Handle device status (can be JSON or plain text)
+    if (deviceType === 'devices' && dataType === 'status') {
+      if (isJson) {
+        await this.processDeviceStatus(deviceId, data);
+      } else if (typeof data === 'string' && (data === 'online' || data === 'offline')) {
+        // Log and optionally update DB for plain text status
+        console.log(`Device ${deviceId} is now: ${data}`);
+        // Example: update DB if needed
+        try {
+          await query(`UPDATE iot_devices SET status = ?, last_seen = datetime('now') WHERE device_id = ?`, [data, deviceId]);
+        } catch (dbErr) {
+          console.error('Error updating device status for plain text:', dbErr);
+        }
+      } else {
+        console.warn('Unknown device status payload:', data);
       }
-    } catch (error) {
-      console.error('Error parsing MQTT message:', error, 'Topic:', topic, 'Payload:', message.toString());
+      return;
+    }
+    // For other topics, just log
+    if (!isJson) {
+      // No crash, just log
+      console.warn('Received non-JSON MQTT message for topic:', topic);
     }
   }
 
